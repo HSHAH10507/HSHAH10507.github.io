@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form Example</title>
+    <style>
+        :root {
+            --bg-color-light: #f4f4f9;
+            --text-color-light: #333;
+            --bg-color-dark: #1e1e2f;
+            --text-color-dark: #f4f4f9;
+            --form-bg-light: #fff;
+            --form-bg-dark: #2a2a3c;
+            --button-bg-light: #5cb85c;
+            --button-hover-light: #4cae4c;
+            --button-bg-dark: #5a9f5a;
+            --button-hover-dark: #4e8e4e;
+            --clear-button-bg-light: #d9534f;
+            --clear-button-hover-light: #c9302c;
+            --clear-button-bg-dark: #c65454;
+            --clear-button-hover-dark: #aa4949;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        h1 {
+            color: inherit;
+        }
+
+        form {
+            background: var(--form-bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode form {
+            background: var(--form-bg-dark);
+        }
+
+        form input, form select, form button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        form input, form select, form button {
+            width: calc(100% - 20px); /* Adjust for padding and border */
+            box-sizing: border-box; /* Ensure padding and borders are included in the width */
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        form button {
+            background-color: var(--button-bg-light);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: var(--button-hover-light);
+        }
+
+        body.dark-mode form button {
+            background-color: var(--button-bg-dark);
+        }
+
+        body.dark-mode form button:hover {
+            background-color: var(--button-hover-dark);
+        }
+
+        #savedData {
+            margin-top: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: var(--form-bg-light);
+        }
+
+        body.dark-mode table th {
+            background-color: var(--form-bg-dark);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #clearButton {
+            background-color: var(--clear-button-bg-light);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #clearButton:hover {
+            background-color: var(--clear-button-hover-light);
+        }
+
+        body.dark-mode #clearButton {
+            background-color: var(--clear-button-bg-dark);
+        }
+
+        body.dark-mode #clearButton:hover {
+            background-color: var(--clear-button-hover-dark);
+        }
+
+        #toggleMode {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: #fff;
+            transition: background-color 0.3s;
+        }
+
+        #toggleMode:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button id="toggleMode">Switch to Dark Mode</button>
+    <h1>User Input Form</h1>
+    <form id="userForm">
+        <input type="text" id="name" placeholder="Enter your name" required>
+        <select id="favoriteColor">
+            <option value="">Select your favorite color</option>
+            <option value="Red">Red</option>
+            <option value="Orange">Orange</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Green">Green</option>
+            <option value="Blue">Blue</option>
+            <option value="Violet">Violet</option>
+            <option value="Pink">Pink</option>
+        </select>
+        <input type="number" id="age" placeholder="Enter your age" min="0" required>
+        <button type="button" id="submitButton">Submit</button>
+    </form>
+
+    <div id="savedData" class="hidden">
+        <h2>Saved Data</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Favorite Color</th>
+                    <th>Age</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+            </tbody>
+        </table>
+        <button id="clearButton">Clear All Data</button>
+    </div>
+
+    <script>
+        // Check for saved data in localStorage
+        const savedData = JSON.parse(localStorage.getItem('userData')) || [];
+
+        // Reference to form elements
+        const form = document.getElementById('userForm');
+        const nameInput = document.getElementById('name');
+        const colorSelect = document.getElementById('favoriteColor');
+        const ageInput = document.getElementById('age');
+        const dataTable = document.getElementById('dataTable');
+        const savedDataDiv = document.getElementById('savedData');
+        const clearButton = document.getElementById('clearButton');
+        const toggleModeButton = document.getElementById('toggleMode');
+
+        // Display saved data on page load
+        const updateTable = () => {
+            dataTable.innerHTML = '';
+            if (savedData.length > 0) {
+                savedDataDiv.classList.remove('hidden');
+                savedData.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${entry.name}</td><td>${entry.color}</td><td>${entry.age}</td>`;
+                    dataTable.appendChild(row);
+                });
+            } else {
+                savedDataDiv.classList.add('hidden');
+            }
+        };
+
+        updateTable();
+
+        // Event listener for form submission
+        document.getElementById('submitButton').addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            const color = colorSelect.value;
+            const age = ageInput.value.trim();
+
+            if (name && color && age) {
+                const entry = { name, color, age };
+                savedData.push(entry);
+                localStorage.setItem('userData', JSON.stringify(savedData));
+
+                // Clear form inputs
+                nameInput.value = '';
+                colorSelect.value = '';
+                ageInput.value = '';
+
+                updateTable();
+                alert('Data saved successfully!');
+            } else {
+                alert('Please fill out all fields!');
+            }
+        });
+
+        // Event listener for clearing all data
+        clearButton.addEventListener('click', () => {
+            localStorage.removeItem('userData');
+            savedData.length = 0; // Clear array
+            updateTable();
+            alert('All data has been cleared!');
+        });
+
+        // Toggle light/dark mode
+        toggleModeButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            toggleModeButton.textContent = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        });
+    </script>
+</body>
+</html>
